@@ -1,0 +1,283 @@
+#include <iostream>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "shaderClass.h"
+#include "VAO.h"
+#include "VBO.h"
+#include "EBO.h"
+#include "Camera.h"
+#include "PBRMaterial.h"
+
+// Ka�da cz�� pokoju jako osobny element
+GLfloat floorVertices[] = {
+    // posX, posY, posZ,  u, v,      nx, ny, nz,       tx, ty, tz,        bx, by, bz
+    -30, -15, -60,  0.0f, 0.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+     30, -15, -60, 10.0f, 0.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+     30, -15,  60, 10.0f,10.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+    -30, -15,  60,  0.0f,10.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+};
+
+GLfloat ceilingVertices[] = {
+    -30, 15, -60, 0.0f, 0.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+     30, 15, -60, 3.0f, 0.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+     30, 15,  60, 3.0f, 6.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+    -30, 15,  60, 0.0f, 6.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+};
+
+GLfloat wallVertices[] = {
+    // back wall (z = -60)
+    -30, -15, -60, 0.0f, 0.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+     30, -15, -60, 6.0f, 0.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+     30,  15, -60, 6.0f, 3.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+    -30,  15, -60, 0.0f, 3.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+
+    // front wall (z = +60)
+    -30, -15, 60, 0.0f, 0.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+     30, -15, 60, 6.0f, 0.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+     30,  15, 60, 6.0f, 3.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+    -30,  15, 60, 0.0f, 3.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+
+    // left wall (x = -30)
+    -30, -15, -60, 0.0f, 0.0f,     1, 0, 0,     0, 0, 1,     0, 1, 0,
+    -30, -15,  60, 12.0f, 0.0f,    1, 0, 0,     0, 0, 1,     0, 1, 0,
+    -30,  15,  60, 12.0f, 3.0f,    1, 0, 0,     0, 0, 1,     0, 1, 0,
+    -30,  15, -60, 0.0f, 3.0f,     1, 0, 0,     0, 0, 1,     0, 1, 0,
+
+    // right wall (x = +30)
+     30, -15, -60, 0.0f, 0.0f,    -1, 0, 0,     0, 0, -1,    0, 1, 0,
+     30, -15,  60, 12.0f, 0.0f,   -1, 0, 0,     0, 0, -1,    0, 1, 0,
+     30,  15,  60, 12.0f, 3.0f,   -1, 0, 0,     0, 0, -1,    0, 1, 0,
+     30,  15, -60, 0.0f, 3.0f,    -1, 0, 0,     0, 0, -1,    0, 1, 0,
+
+};
+
+GLuint quadIndices[] = { 0, 1, 2, 2, 3, 0 };
+GLuint wallIndices[] = {
+    0, 1, 2, 2, 3, 0,      // back
+    4, 5, 6, 6, 7, 4,      // front
+    8, 9,10,10,11, 8,      // left
+   12,13,14,14,15,12       // right
+};
+
+glm::vec3 lightPositions[] = {
+    {-20.0f, 14.0f, -50.0f},
+    {-20.0f, 14.0f, -25.0f},
+    {-20.0f, 14.0f,   0.0f},
+    {-20.0f, 14.0f,  25.0f},
+    {-20.0f, 14.0f,  50.0f},
+
+    {0.0f, 14.0f, -50.0f},
+    {0.0f, 14.0f, -25.0f},
+    {0.0f, 14.0f,   0.0f},
+    {0.0f, 14.0f,  25.0f},
+    {0.0f, 14.0f,  50.0f},
+
+    {20.0f, 14.0f, -50.0f},
+    {20.0f, 14.0f, -25.0f},
+    {20.0f, 14.0f,   0.0f},
+    {20.0f, 14.0f,  25.0f},
+    {20.0f, 14.0f,  50.0f},
+};
+
+unsigned int loadTexture(const char* path) {
+    unsigned int tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    int w, h, c;
+    unsigned char* data = stbi_load(path, &w, &h, &c, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cout << "Failed to load texture: " << path << std::endl;
+    }
+    stbi_image_free(data);
+    return tex;
+}
+
+int main() {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    GLFWwindow* window = glfwCreateWindow(800, 800, "Room", NULL, NULL);
+    glfwMakeContextCurrent(window);
+    gladLoadGL();
+    glEnable(GL_DEPTH_TEST);
+
+    Shader shader("default.vert", "default.frag");
+    
+    // Sprawdź, czy shader został poprawnie utworzony
+    GLint success;
+    glGetProgramiv(shader.ID, GL_LINK_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetProgramInfoLog(shader.ID, 512, NULL, infoLog);
+        std::cerr << "ERROR: Shader linking failed\n" << infoLog << std::endl;
+        return -1;
+    }
+    
+    Camera camera(800, 800, glm::vec3(0.0f, 0.0f, 30.0f)); // Przesuń kamerę do przodu
+
+    // Floor
+    VAO vaoFloor; 
+    vaoFloor.Bind();
+    VBO vboFloor(floorVertices, sizeof(floorVertices));
+    EBO eboFloor(quadIndices, sizeof(quadIndices));
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)0);                      // aPos
+    glEnableVertexAttribArray(0);
+    
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(3 * sizeof(float)));     // aTex
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(5 * sizeof(float)));     // aNormal
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(8 * sizeof(float)));     // aTangent
+    glEnableVertexAttribArray(3);
+
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(11 * sizeof(float)));    // aBitangent
+    glEnableVertexAttribArray(4);
+    vaoFloor.Unbind();
+
+
+    // Ceiling
+    VAO vaoCeil; vaoCeil.Bind();
+    VBO vboCeil(ceilingVertices, sizeof(ceilingVertices));
+    EBO eboCeil(quadIndices, sizeof(quadIndices));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)0);                      // aPos
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(3 * sizeof(float)));     // aTex
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(5 * sizeof(float)));     // aNormal
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(8 * sizeof(float)));     // aTangent
+    glEnableVertexAttribArray(3);
+
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(11 * sizeof(float)));    // aBitangent
+    glEnableVertexAttribArray(4);
+    vaoCeil.Unbind();
+
+    // Walls
+    VAO vaoWalls; vaoWalls.Bind();
+    VBO vboWalls(wallVertices, sizeof(wallVertices));
+    EBO eboWalls(wallIndices, sizeof(wallIndices));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)0);                      // aPos
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(3 * sizeof(float)));     // aTex
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(5 * sizeof(float)));     // aNormal
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(8 * sizeof(float)));     // aTangent
+    glEnableVertexAttribArray(3);
+
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(11 * sizeof(float)));    // aBitangent
+    glEnableVertexAttribArray(4);
+    vaoWalls.Unbind();
+
+    // Tekstury
+    PBRMaterial floorMat = loadPBRMaterial("res/texture/floor/", "wood");
+    std::cout << "FLOOR albedo: " << floorMat.albedo
+        << " normal: " << floorMat.normal
+        << " rough: " << floorMat.roughness << std::endl;
+        
+    if (floorMat.albedo == 0 || floorMat.normal == 0 || floorMat.roughness == 0) {
+        std::cerr << "ERROR: Failed to load floor textures!" << std::endl;
+    }
+
+	PBRMaterial ceilingMat = loadPBRMaterial("res/texture/ceiling/", "wall");
+	std::cout << "CEILING albedo: " << ceilingMat.albedo
+		<< " normal: " << ceilingMat.normal
+		<< " rough: " << ceilingMat.roughness << std::endl;
+		
+    if (ceilingMat.albedo == 0 || ceilingMat.normal == 0 || ceilingMat.roughness == 0) {
+        std::cerr << "ERROR: Failed to load ceiling textures!" << std::endl;
+    }
+    
+	PBRMaterial wallMat = loadPBRMaterial("res/texture/wall/", "plastered_wall");
+	std::cout << "WALL albedo: " << wallMat.albedo
+		<< " normal: " << wallMat.normal
+		<< " rough: " << wallMat.roughness << std::endl;
+		
+    if (wallMat.albedo == 0 || wallMat.normal == 0 || wallMat.roughness == 0) {
+        std::cerr << "ERROR: Failed to load wall textures!" << std::endl;
+    }
+
+    // Sprawdź błędy OpenGL po załadowaniu tekstur
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        std::cerr << "GL ERROR after texture loading: " << err << std::endl;
+    }
+
+    while (!glfwWindowShouldClose(window)) {
+        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        camera.Inputs(window);
+        camera.Matrix(45.0f, 0.1f, 100.0f, shader, "camMatrix");
+        shader.Activate();
+        
+        // Pozycja światła (np. nad środkiem pomieszczenia)
+        for (int i = 0; i < 15; ++i) {
+            std::string name = "lightPositions[" + std::to_string(i) + "]";
+            glUniform3fv(glGetUniformLocation(shader.ID, name.c_str()), 1, glm::value_ptr(lightPositions[i]));
+        }
+        // Pozycja kamery (dynamiczna)
+        glUniform3fv(glGetUniformLocation(shader.ID, "viewPos"), 1, glm::value_ptr(camera.Position));
+
+        glUniform1i(glGetUniformLocation(shader.ID, "albedoMap"), 0);
+        glUniform1i(glGetUniformLocation(shader.ID, "normalMap"), 1);
+        glUniform1i(glGetUniformLocation(shader.ID, "roughnessMap"), 2);
+        
+        // Ustaw macierz model (jednostkowa dla podstawowych obiektów)
+        glm::mat4 modelMatrix = glm::mat4(1.0f);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        
+        // Floor
+        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, floorMat.albedo);
+        glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, floorMat.normal);
+        glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, floorMat.roughness);
+        vaoFloor.Bind();
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // Ceiling
+        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, ceilingMat.albedo);
+        glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, ceilingMat.normal);
+        glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, ceilingMat.roughness);
+        vaoCeil.Bind();
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // Walls
+        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, wallMat.albedo);
+        glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, wallMat.normal);
+        glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, wallMat.roughness);
+        vaoWalls.Bind();
+        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
+        
+        GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR)
+            std::cerr << "GL ERROR: " << err << std::endl;
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 0;
+}

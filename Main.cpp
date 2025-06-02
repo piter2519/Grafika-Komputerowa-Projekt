@@ -62,25 +62,25 @@ GLuint wallIndices[] = {
    12,13,14,14,15,12       // right
 };
 
-glm::vec3 lightPositions[] = {
-    // Zmniejszone pozycje świateł do nowego rozmiaru pokoju
-    {-10.0f, 7.0f, -25.0f},
-    {-10.0f, 7.0f, -12.5f},
-    {-10.0f, 7.0f,   0.0f},
-    {-10.0f, 7.0f,  12.5f},
-    {-10.0f, 7.0f,  25.0f},
+// Pozycje lamp na suficie (będą też pozycjami świateł)
+glm::vec3 lampPositions[] = {
+    {-10.0f, 2.8f, -25.0f},   // Lampy zwisają z sufitu na wysokości 2.8f
+    {-10.0f, 2.8f, -12.5f},
+    {-10.0f, 2.8f,   0.0f},
+    {-10.0f, 2.8f,  12.5f},
+    {-10.0f, 2.8f,  25.0f},
 
-    {0.0f, 7.0f, -25.0f},
-    {0.0f, 7.0f, -12.5f},
-    {0.0f, 7.0f,   0.0f},
-    {0.0f, 7.0f,  12.5f},
-    {0.0f, 7.0f,  25.0f},
+    {0.0f, 2.8f, -25.0f},
+    {0.0f, 2.8f, -12.5f},
+    {0.0f, 2.8f,   0.0f},
+    {0.0f, 2.8f,  12.5f},
+    {0.0f, 2.8f,  25.0f},
 
-    {10.0f, 7.0f, -25.0f},
-    {10.0f, 7.0f, -12.5f},
-    {10.0f, 7.0f,   0.0f},
-    {10.0f, 7.0f,  12.5f},
-    {10.0f, 7.0f,  25.0f},
+    {10.0f, 2.8f, -25.0f},
+    {10.0f, 2.8f, -12.5f},
+    {10.0f, 2.8f,   0.0f},
+    {10.0f, 2.8f,  12.5f},
+    {10.0f, 2.8f,  25.0f},
 };
 
 unsigned int loadTexture(const char* path) {
@@ -221,9 +221,7 @@ int main() {
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
         std::cerr << "GL ERROR after texture loading: " << err << std::endl;
-    }
-
-    // Załaduj model lampy
+    }    // Załaduj model lampy
     Model* lampModel = nullptr;
     try {
         lampModel = new Model("res/models/modern_ceiling_lamp_01.obj");
@@ -233,6 +231,16 @@ int main() {
         // Kontynuuj bez modelu lampy
     }
 
+    // Załaduj tekstury dla lamp
+    PBRMaterial lampMat = loadPBRMaterial("res/texture/other/", "modern_ceiling_lamp_01");
+    std::cout << "LAMP albedo: " << lampMat.albedo
+        << " normal: " << lampMat.normal
+        << " rough: " << lampMat.roughness << std::endl;
+        
+    if (lampMat.albedo == 0 || lampMat.normal == 0 || lampMat.roughness == 0) {
+        std::cerr << "ERROR: Failed to load lamp textures!" << std::endl;
+    }
+
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -240,11 +248,13 @@ int main() {
         camera.Inputs(window);
         camera.Matrix(45.0f, 0.1f, 100.0f, shader, "camMatrix");
         shader.Activate();
-        
-        // Pozycja światła (np. nad środkiem pomieszczenia)
+          // Pozycje świateł (teraz są w środku żarówek lamp)
         for (int i = 0; i < 15; ++i) {
             std::string name = "lightPositions[" + std::to_string(i) + "]";
-            glUniform3fv(glGetUniformLocation(shader.ID, name.c_str()), 1, glm::value_ptr(lightPositions[i]));
+            // Światło umieszczone w środku żarówki lampy (nieco niżej niż sama lampa dla lepszego efektu)
+            glm::vec3 lightPos = lampPositions[i];
+            lightPos.y -= 1.0f; // Przesunięcie światła nieco w dół do środka żarówki
+            glUniform3fv(glGetUniformLocation(shader.ID, name.c_str()), 1, glm::value_ptr(lightPos));
         }
         // Pozycja kamery (dynamiczna)
         glUniform3fv(glGetUniformLocation(shader.ID, "viewPos"), 1, glm::value_ptr(camera.Position));
@@ -274,23 +284,21 @@ int main() {
         glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, wallMat.normal);
         glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, wallMat.roughness);
         vaoWalls.Bind();
-        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);          // Renderuj lampy zwisające z sufitu w pozycjach świateł
+        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);        // Renderuj lampy zwisające z sufitu
         if (lampModel) {
+            // Ustaw tekstury dla lampy
+            glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, lampMat.albedo);
+            glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, lampMat.normal);
+            glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, lampMat.roughness);
+            
             for (int i = 0; i < 15; ++i) {
                 glm::mat4 lampMatrix = glm::mat4(1.0f);
                 
-                // Umieść lampę nad pozycją światła, zwisającą z sufitu
-                glm::vec3 lampPosition = lightPositions[i];
-                lampPosition.y = 7.5f; // Wysokość sufitu
-                lampPosition.y -= 1.5f; // Zwiś o 1.5 jednostki z sufitu
+                // Umieść lampę w pozycji lampPositions (już zawiera prawidłową wysokość)
+                lampMatrix = glm::translate(lampMatrix, lampPositions[i]);
                 
-                lampMatrix = glm::translate(lampMatrix, lampPosition);
-                
-                // Obróć lampę do góry nogami, żeby zwisała
-                lampMatrix = glm::rotate(lampMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-                
-                // Skaluj lampę do odpowiedniego rozmiaru 
-                lampMatrix = glm::scale(lampMatrix, glm::vec3(0.8f, 0.8f, 0.8f)); 
+                // Powiększ lampę do lepszego rozmiaru
+                lampMatrix = glm::scale(lampMatrix, glm::vec3(4.0f, 4.0f, 4.0f)); 
                 
                 glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lampMatrix));
                 

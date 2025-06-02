@@ -10,47 +10,47 @@
 #include "EBO.h"
 #include "Camera.h"
 #include "PBRMaterial.h"
+#include "Model.h"
 
-// Ka�da cz�� pokoju jako osobny element
+// Ka�da cz�� pokoju jako osobny element - zmniejszony rozmiar dla lepszych proporcji z lampami
 GLfloat floorVertices[] = {
     // posX, posY, posZ,  u, v,      nx, ny, nz,       tx, ty, tz,        bx, by, bz
-    -30, -15, -60,  0.0f, 0.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
-     30, -15, -60, 10.0f, 0.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
-     30, -15,  60, 10.0f,10.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
-    -30, -15,  60,  0.0f,10.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+    -15, -7.5, -30,  0.0f, 0.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+     15, -7.5, -30, 10.0f, 0.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+     15, -7.5,  30, 10.0f,10.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
+    -15, -7.5,  30,  0.0f,10.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
 };
 
 GLfloat ceilingVertices[] = {
-    -30, 15, -60, 0.0f, 0.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
-     30, 15, -60, 3.0f, 0.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
-     30, 15,  60, 3.0f, 6.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
-    -30, 15,  60, 0.0f, 6.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+    -15, 7.5, -30, 0.0f, 0.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+     15, 7.5, -30, 3.0f, 0.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+     15, 7.5,  30, 3.0f, 6.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
+    -15, 7.5,  30, 0.0f, 6.0f,     0, -1, 0,     1, 0, 0,     0, 0, -1,
 };
 
 GLfloat wallVertices[] = {
-    // back wall (z = -60)
-    -30, -15, -60, 0.0f, 0.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
-     30, -15, -60, 6.0f, 0.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
-     30,  15, -60, 6.0f, 3.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
-    -30,  15, -60, 0.0f, 3.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+    // back wall (z = -30)
+    -15, -7.5, -30, 0.0f, 0.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+     15, -7.5, -30, 6.0f, 0.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+     15,  7.5, -30, 6.0f, 3.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
+    -15,  7.5, -30, 0.0f, 3.0f,     0, 0, 1,     1, 0, 0,     0, 1, 0,
 
-    // front wall (z = +60)
-    -30, -15, 60, 0.0f, 0.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
-     30, -15, 60, 6.0f, 0.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
-     30,  15, 60, 6.0f, 3.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
-    -30,  15, 60, 0.0f, 3.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+    // front wall (z = +30)
+    -15, -7.5, 30, 0.0f, 0.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+     15, -7.5, 30, 6.0f, 0.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+     15,  7.5, 30, 6.0f, 3.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
+    -15,  7.5, 30, 0.0f, 3.0f,      0, 0, -1,    1, 0, 0,     0, 1, 0,
 
-    // left wall (x = -30)
-    -30, -15, -60, 0.0f, 0.0f,     1, 0, 0,     0, 0, 1,     0, 1, 0,
-    -30, -15,  60, 12.0f, 0.0f,    1, 0, 0,     0, 0, 1,     0, 1, 0,
-    -30,  15,  60, 12.0f, 3.0f,    1, 0, 0,     0, 0, 1,     0, 1, 0,
-    -30,  15, -60, 0.0f, 3.0f,     1, 0, 0,     0, 0, 1,     0, 1, 0,
+    // left wall (x = -15)
+    -15, -7.5, -30, 0.0f, 0.0f,     1, 0, 0,     0, 0, 1,     0, 1, 0,
+    -15, -7.5,  30, 12.0f, 0.0f,    1, 0, 0,     0, 0, 1,     0, 1, 0,    -15,  7.5,  30, 12.0f, 3.0f,    1, 0, 0,     0, 0, 1,     0, 1, 0,
+    -15,  7.5, -30, 0.0f, 3.0f,     1, 0, 0,     0, 0, 1,     0, 1, 0,
 
-    // right wall (x = +30)
-     30, -15, -60, 0.0f, 0.0f,    -1, 0, 0,     0, 0, -1,    0, 1, 0,
-     30, -15,  60, 12.0f, 0.0f,   -1, 0, 0,     0, 0, -1,    0, 1, 0,
-     30,  15,  60, 12.0f, 3.0f,   -1, 0, 0,     0, 0, -1,    0, 1, 0,
-     30,  15, -60, 0.0f, 3.0f,    -1, 0, 0,     0, 0, -1,    0, 1, 0,
+    // right wall (x = +15)
+     15, -7.5, -30, 0.0f, 0.0f,    -1, 0, 0,     0, 0, -1,    0, 1, 0,
+     15, -7.5,  30, 12.0f, 0.0f,   -1, 0, 0,     0, 0, -1,    0, 1, 0,
+     15,  7.5,  30, 12.0f, 3.0f,   -1, 0, 0,     0, 0, -1,    0, 1, 0,
+     15,  7.5, -30, 0.0f, 3.0f,    -1, 0, 0,     0, 0, -1,    0, 1, 0,
 
 };
 
@@ -63,23 +63,24 @@ GLuint wallIndices[] = {
 };
 
 glm::vec3 lightPositions[] = {
-    {-20.0f, 14.0f, -50.0f},
-    {-20.0f, 14.0f, -25.0f},
-    {-20.0f, 14.0f,   0.0f},
-    {-20.0f, 14.0f,  25.0f},
-    {-20.0f, 14.0f,  50.0f},
+    // Zmniejszone pozycje świateł do nowego rozmiaru pokoju
+    {-10.0f, 7.0f, -25.0f},
+    {-10.0f, 7.0f, -12.5f},
+    {-10.0f, 7.0f,   0.0f},
+    {-10.0f, 7.0f,  12.5f},
+    {-10.0f, 7.0f,  25.0f},
 
-    {0.0f, 14.0f, -50.0f},
-    {0.0f, 14.0f, -25.0f},
-    {0.0f, 14.0f,   0.0f},
-    {0.0f, 14.0f,  25.0f},
-    {0.0f, 14.0f,  50.0f},
+    {0.0f, 7.0f, -25.0f},
+    {0.0f, 7.0f, -12.5f},
+    {0.0f, 7.0f,   0.0f},
+    {0.0f, 7.0f,  12.5f},
+    {0.0f, 7.0f,  25.0f},
 
-    {20.0f, 14.0f, -50.0f},
-    {20.0f, 14.0f, -25.0f},
-    {20.0f, 14.0f,   0.0f},
-    {20.0f, 14.0f,  25.0f},
-    {20.0f, 14.0f,  50.0f},
+    {10.0f, 7.0f, -25.0f},
+    {10.0f, 7.0f, -12.5f},
+    {10.0f, 7.0f,   0.0f},
+    {10.0f, 7.0f,  12.5f},
+    {10.0f, 7.0f,  25.0f},
 };
 
 unsigned int loadTexture(const char* path) {
@@ -125,7 +126,7 @@ int main() {
         return -1;
     }
     
-    Camera camera(800, 800, glm::vec3(0.0f, 0.0f, 30.0f)); // Przesuń kamerę do przodu
+    Camera camera(800, 800, glm::vec3(0.0f, 0.0f, 20.0f)); // Dostosowana pozycja kamery do nowego rozmiaru pokoju
 
     // Floor
     VAO vaoFloor; 
@@ -216,12 +217,20 @@ int main() {
 		
     if (wallMat.albedo == 0 || wallMat.normal == 0 || wallMat.roughness == 0) {
         std::cerr << "ERROR: Failed to load wall textures!" << std::endl;
-    }
-
-    // Sprawdź błędy OpenGL po załadowaniu tekstur
+    }    // Sprawdź błędy OpenGL po załadowaniu tekstur
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
         std::cerr << "GL ERROR after texture loading: " << err << std::endl;
+    }
+
+    // Załaduj model lampy
+    Model* lampModel = nullptr;
+    try {
+        lampModel = new Model("res/models/modern_ceiling_lamp_01.obj");
+        std::cout << "Lamp model loaded successfully!" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to load lamp model: " << e.what() << std::endl;
+        // Kontynuuj bez modelu lampy
     }
 
     while (!glfwWindowShouldClose(window)) {
@@ -260,21 +269,48 @@ int main() {
         glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, ceilingMat.normal);
         glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, ceilingMat.roughness);
         vaoCeil.Bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        // Walls
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);        // Walls
         glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, wallMat.albedo);
         glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, wallMat.normal);
         glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, wallMat.roughness);
         vaoWalls.Bind();
-        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);          // Renderuj lampy zwisające z sufitu w pozycjach świateł
+        if (lampModel) {
+            for (int i = 0; i < 15; ++i) {
+                glm::mat4 lampMatrix = glm::mat4(1.0f);
+                
+                // Umieść lampę nad pozycją światła, zwisającą z sufitu
+                glm::vec3 lampPosition = lightPositions[i];
+                lampPosition.y = 7.5f; // Wysokość sufitu
+                lampPosition.y -= 1.5f; // Zwiś o 1.5 jednostki z sufitu
+                
+                lampMatrix = glm::translate(lampMatrix, lampPosition);
+                
+                // Obróć lampę do góry nogami, żeby zwisała
+                lampMatrix = glm::rotate(lampMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                
+                // Skaluj lampę do odpowiedniego rozmiaru 
+                lampMatrix = glm::scale(lampMatrix, glm::vec3(0.8f, 0.8f, 0.8f)); 
+                
+                glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lampMatrix));
+                
+                lampModel->Draw(shader);
+            }
+            
+            // Przywróć macierz modelu jednostkową
+            glm::mat4 identityMatrix = glm::mat4(1.0f);
+            glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(identityMatrix));
+        }
         
         GLenum err;
         while ((err = glGetError()) != GL_NO_ERROR)
-            std::cerr << "GL ERROR: " << err << std::endl;
-
-        glfwSwapBuffers(window);
+            std::cerr << "GL ERROR: " << err << std::endl;        glfwSwapBuffers(window);
         glfwPollEvents();
+    }
+
+    // Wyczyść pamięć
+    if (lampModel) {
+        delete lampModel;
     }
 
     glfwDestroyWindow(window);

@@ -26,7 +26,7 @@ void main()
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 result = vec3(0.0);
 
-    float lightPower = 100.0;
+    float lightPower = 40.0;
     vec3 lightColor = vec3(1.0);
 
     for (int i = 0; i < NUM_LIGHTS; ++i)

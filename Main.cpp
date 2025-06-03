@@ -241,6 +241,29 @@ int main() {
         std::cerr << "ERROR: Failed to load lamp textures!" << std::endl;
     }
 
+    Model* frameModel = nullptr;
+    Model* canvasModel = nullptr;
+    try {
+        frameModel = new Model("res/models/picture_frame.obj");
+        canvasModel = new Model("res/models/picture_frame_canvas.obj");
+        std::cout << "Picture frame and canvas models loaded successfully!" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Failed to load picture frame models: " << e.what() << std::endl;
+    }
+
+    PBRMaterial frameMat;
+    frameMat.albedo = loadTexturePBR("res/texture/other/fancy_picture_frame_01_diff_2k.jpg");
+    frameMat.normal = loadTexturePBR("res/texture/other/fancy_picture_frame_01_nor_gl_2k.jpg");
+    frameMat.roughness = loadTexturePBR("res/texture/other/fancy_picture_frame_01_rough_2k.jpg");
+
+    PBRMaterial canvasMat;
+    canvasMat.albedo = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_diff_2k.png", GL_RGB);
+    canvasMat.normal = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_nor_gl_2k.png");
+    canvasMat.roughness = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_rough_2k.png");
+
+
+
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -304,6 +327,34 @@ int main() {
                 
                 lampModel->Draw(shader);
             }
+
+            if (frameModel && canvasModel) {
+                for (int i = 0; i < 4; ++i) {
+                    float offsetZ = -14.9f + (i % 2) * 30.0f; // prawa i lewa ściana
+                    float offsetY = 0.0f;
+                    float offsetX = (i < 2) ? -14.9f : 14.9f;
+                    float rotation = (i < 2) ? 90.0f : -90.0f;
+
+                    glm::mat4 frameMatrix = glm::mat4(1.0f);
+                    frameMatrix = glm::translate(frameMatrix, glm::vec3(offsetX, offsetY, offsetZ));
+                    frameMatrix = glm::rotate(frameMatrix, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+                    frameMatrix = glm::scale(frameMatrix, glm::vec3(30.0f));
+                    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(frameMatrix));
+
+                    // Rysuj ramę
+                    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, frameMat.albedo);
+                    glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, frameMat.normal);
+                    glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, frameMat.roughness);
+                    frameModel->Draw(shader);
+
+                    // Rysuj płótno
+                    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, canvasMat.albedo);
+                    glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, canvasMat.normal);
+                    glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, canvasMat.roughness);
+                    canvasModel->Draw(shader);
+                }
+            }
+
             
             // Przywróć macierz modelu jednostkową
             glm::mat4 identityMatrix = glm::mat4(1.0f);

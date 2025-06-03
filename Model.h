@@ -1,4 +1,3 @@
-// === Model.h ===
 #pragma once
 
 #include <vector>
@@ -10,6 +9,7 @@
 #include "VBO.h"
 #include "EBO.h"
 #include <optional>
+#include <unordered_map>
 
 class Model {
 public:
@@ -21,6 +21,7 @@ public:
 
     Model(const std::string& path);
     void Draw(Shader& shader);
+
+private:
+    void computeTangents();
 };
-
-

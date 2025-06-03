@@ -4,7 +4,9 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 in vec3 FragPos;
-in mat3 TBN;
+in vec3 T;
+in vec3 B;
+in vec3 N;
 
 uniform sampler2D albedoMap;
 uniform sampler2D normalMap;
@@ -19,9 +21,11 @@ void main()
     vec3 albedo = texture(albedoMap, TexCoords).rgb;
     float roughness = clamp(texture(roughnessMap, TexCoords).r, 0.04, 1.0);
 
+    mat3 TBN = mat3(normalize(T), normalize(B), normalize(N));
     vec3 normal = texture(normalMap, TexCoords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(TBN * normal);
+
 
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 result = vec3(0.0);

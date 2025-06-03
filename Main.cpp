@@ -243,13 +243,15 @@ int main() {
 
     Model* frameModel = nullptr;
     Model* canvasModel = nullptr;
+    Model* maxwellModel = nullptr;
     try {
         frameModel = new Model("res/models/picture_frame.obj");
         canvasModel = new Model("res/models/picture_frame_canvas.obj");
-        std::cout << "Picture frame and canvas models loaded successfully!" << std::endl;
+        maxwellModel = new Model("res/models/maxwell.obj");
+        std::cout << "All models loaded successfully!" << std::endl;
     }
     catch (const std::exception& e) {
-        std::cerr << "Failed to load picture frame models: " << e.what() << std::endl;
+        std::cerr << "Failed to load one or more models: " << e.what() << std::endl;
     }
 
     PBRMaterial frameMat;
@@ -262,11 +264,21 @@ int main() {
     canvasMat.normal = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_nor_gl_2k.png");
     canvasMat.roughness = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_rough_2k.png");
 
+    GLuint maxwellTex = loadTexturePBR("res/texture/other/maxwell_basecolor.jpeg");
 
-
+    bool sepiaEnabled = false;
     while (!glfwWindowShouldClose(window)) {
+        static float maxwellAngle = 0.0f;
+        maxwellAngle += 0.01f;
+        if (maxwellAngle > 360.0f) maxwellAngle -= 360.0f;
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+            sepiaEnabled = true;
+        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+            sepiaEnabled = false;
+        
+        glUniform1i(glGetUniformLocation(shader.ID, "useSepia"), sepiaEnabled);
 
         camera.Inputs(window);
         camera.Matrix(45.0f, 0.1f, 100.0f, shader, "camMatrix");
@@ -353,6 +365,19 @@ int main() {
                     glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, canvasMat.roughness);
                     canvasModel->Draw(shader);
                 }
+            }
+
+            if (maxwellModel) {
+                glm::mat4 maxwellMatrix = glm::mat4(1.0f);
+                maxwellMatrix = glm::translate(maxwellMatrix, glm::vec3(0.0f, -7.2f, 0.0f));
+                maxwellMatrix = glm::rotate(maxwellMatrix, maxwellAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+                maxwellMatrix = glm::scale(maxwellMatrix, glm::vec3(0.15f));
+                glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(maxwellMatrix));
+
+                glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, maxwellTex);
+                glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, 0);
+                glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, 0);
+                maxwellModel->Draw(shader);
             }
 
             

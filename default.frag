@@ -15,6 +15,7 @@ uniform sampler2D roughnessMap;
 uniform vec3 viewPos;
 #define NUM_LIGHTS 15
 uniform vec3 lightPositions[NUM_LIGHTS];
+uniform bool useSepia;
 
 void main()
 {
@@ -52,5 +53,13 @@ void main()
 
     vec3 ambient = 0.1 * albedo;
     vec3 finalColor = ambient + result;
+    if (useSepia) {
+        finalColor = vec3(
+            dot(finalColor, vec3(0.393, 0.769, 0.189)),
+            dot(finalColor, vec3(0.349, 0.686, 0.168)),
+            dot(finalColor, vec3(0.272, 0.534, 0.131))
+        );
+    }
     FragColor = vec4(min(finalColor, vec3(1.0)), 1.0);
+
 }

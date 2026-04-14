@@ -19,7 +19,7 @@ Projekt zrealizowany w ramach czwartego semestru (Grafika Komputerowa). Jest to 
 ## 🚀 Jak uruchomić?
 1. Sklonuj to repozytorium do wybranego folderu.
    ```bash
-   git clone <adres_twojego_repozytorium>
+   git clone https://github.com/piter2519/Grafika-Komputerowa-Projekt
    ```
 2. Otwórz projekt w środowisku **Visual Studio** dwukrotnie klikając na plik `lab6.sln`.
 3. Upewnij się, że platforma kompilacji ustawiona jest pod system docelowy (często **x64**).

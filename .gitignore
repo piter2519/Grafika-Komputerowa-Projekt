@@ -1,0 +1,47 @@
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.dbmdl
+*.pdb
+*.ilk
+*.idb
+*.vcppes
+
+# Build directories and outputs
+x64/
+x86/
+Debug/
+Release/
+lab6/x64/
+lab6/Debug/
+lab6/Release/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled libraries/executables
+*.so
+*.dylib
+*.dll
+*.lai
+*.la
+*.a
+*.lib
+*.exe
+*.out
+*.app
+
+# Logs
+*.log
+/Sprawozdanie.docx

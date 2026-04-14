@@ -12,7 +12,6 @@
 #include "PBRMaterial.h"
 #include "Model.h"
 
-// Ka�da cz�� pokoju jako osobny element - zmniejszony rozmiar dla lepszych proporcji z lampami
 GLfloat floorVertices[] = {
     // posX, posY, posZ,  u, v,      nx, ny, nz,       tx, ty, tz,        bx, by, bz
     -15, -7.5, -30,  0.0f, 0.0f,     0, 1, 0,           1, 0, 0,           0, 0, 1,
@@ -260,7 +259,12 @@ int main() {
     frameMat.roughness = loadTexturePBR("res/texture/other/fancy_picture_frame_01_rough_2k.jpg");
 
     PBRMaterial canvasMat;
-    canvasMat.albedo = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_diff_2k.png", GL_RGB);
+    GLuint paintingTextures[4] = {
+    loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_diff_2k.png", GL_RGB),
+    loadTexturePBR("res/texture/other/fancy_picture_frame_02_canvas_diff_2k.png", GL_RGB),
+    loadTexturePBR("res/texture/other/fancy_picture_frame_03_canvas_diff_2k.png", GL_RGB),
+    loadTexturePBR("res/texture/other/fancy_picture_frame_04_canvas_diff_2k.png", GL_RGB)
+    };
     canvasMat.normal = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_nor_gl_2k.png");
     canvasMat.roughness = loadTexturePBR("res/texture/other/fancy_picture_frame_01_canvas_rough_2k.png");
 
@@ -342,7 +346,7 @@ int main() {
 
             if (frameModel && canvasModel) {
                 for (int i = 0; i < 4; ++i) {
-                    float offsetZ = -14.9f + (i % 2) * 30.0f; // prawa i lewa ściana
+                    float offsetZ = -14.9f + (i % 2) * 30.0f;
                     float offsetY = 0.0f;
                     float offsetX = (i < 2) ? -14.9f : 14.9f;
                     float rotation = (i < 2) ? 90.0f : -90.0f;
@@ -353,19 +357,18 @@ int main() {
                     frameMatrix = glm::scale(frameMatrix, glm::vec3(30.0f));
                     glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(frameMatrix));
 
-                    // Rysuj ramę
                     glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, frameMat.albedo);
                     glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, frameMat.normal);
                     glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, frameMat.roughness);
                     frameModel->Draw(shader);
 
-                    // Rysuj płótno
-                    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, canvasMat.albedo);
+                    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, paintingTextures[i]);
                     glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, canvasMat.normal);
                     glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, canvasMat.roughness);
                     canvasModel->Draw(shader);
                 }
             }
+
 
             if (maxwellModel) {
                 glm::mat4 maxwellMatrix = glm::mat4(1.0f);

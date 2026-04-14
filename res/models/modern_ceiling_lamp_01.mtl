@@ -1,0 +1,38 @@
+# Blender 4.4.3 MTL File: 'modern_ceiling_lamp_01_4k.blend'
+# www.blender.org
+
+newmtl modern_ceiling_globe
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.622958 0.541622 0.474550
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_diff_4k.jpg
+map_Ns C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_rough_4k.jpg
+map_refl C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_metal_4k.exr
+map_Bump -bm 1.000000 C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_nor_gl_4k.exr
+
+newmtl modern_ceiling_lamp_01
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_diff_4k.jpg
+map_Ns C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_rough_4k.jpg
+map_refl C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_metal_4k.exr
+map_Bump -bm 1.000000 C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_nor_gl_4k.exr
+
+newmtl modern_ceiling_lamp_01_glass
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.340000 0.340000 0.340000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Ns C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_rough_4k.jpg
+map_refl C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_metal_4k.exr
+map_Bump -bm 1.000000 C:/Users/lap/AppData/Local/Temp/59ffd119-fd96-491f-98a4-eb37c0ef483a_modern_ceiling_lamp_01_4k.blend.zip.83a/textures/modern_ceiling_lamp_01_nor_gl_4k.exr
